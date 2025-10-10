@@ -40,15 +40,6 @@ class FlatFileManager:
             json.dump(self.conversations_index, f, indent=3)
 
     def get_conversation(self, conversation_id: str) -> List[any]:
-        """
-        --- TODO 4: Retrieve a user's conversation ---
-        1 - Find the filepath in the conversations index
-            - If DNE return empty list []
-        2 - Reads the conversation from the JSON file.
-            - If the file exists, load the JSON data and return it.
-            - If the file does not exist it should return an empty list `[]` without raising an error.
-            Hint: Use a try-except block to handle error case.
-        """
 
         conversation = self.conversations_index.get(conversation_id)
         if not conversation:
@@ -61,17 +52,15 @@ class FlatFileManager:
 
 
     def save_conversation(self, conversation_id: str, relative_filepath: str, messages: List[any]) -> None:
-        """
-        --- TODO 5: Save a user's conversation ---
-        1 - Add the conversation ID and filepath to self.conversation_index
-        2 - Save conversation index to disk
-            - T
-        3 - Save the given list of messages to the storage dir/filepath as a JSON file.
-            This method should overwrite the entire file with the new contents of the `messages` list.
-            - Use JSON formatting to make the file human-readable (e.g., indentation).
-            Hint: Use `json.dump()` with the `indent` parameter.
-        """
-        pass # fixme!
+
+        #Asked ChatGPT why I was failing to save conversation and it said to convert the relative filepath to a full path
+        full_path = os.path.join(self.storage_dir, relative_filepath)
+        
+        with open(full_path, "w") as f:
+            json.dump(messages, f, indent=3)
+        
+        self.conversations_index.update({conversation_id: relative_filepath})
+        self.save_index()
 
     def run_tests(self):
         print("Testing FlatFileManager._ensure_storage_exists()")
