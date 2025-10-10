@@ -24,12 +24,10 @@ def main():
     run_chat(db_manager, conversation_id)
 
 def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
-    # --- TODO 2: Check if conversation already exists, printout conversation if so ---
-    #   - Add a timer that times how long it took to use get_conversation and print the results after
-    start_time = None # fixme!
-    messages = None # fixme!
-    end_time = None # fixme!
-    duration = None # fixme!
+    start_time = time.time()
+    messages = db_manager.get_conversation(conversation_id)
+    end_time = time.time()
+    duration = end_time - start_time
     if messages:
         for message in messages:
             print(message)
