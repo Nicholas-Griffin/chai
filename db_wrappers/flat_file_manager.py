@@ -25,34 +25,19 @@ class FlatFileManager:
         os.makedirs(self.storage_dir, exist_ok=True)
         print(f"Storage Directory '{self.storage_dir}' is ready.")
 
-        pass
-
-
     def _init_index(self) -> None:
 
-        os.
-        """
-        --- TODO 2: Load the conversations index file
-        1 - Check for the existence of self.storage_dir/conversations.json
-        2 - If DNE, the create and save to disk using self.save_index()
-        3 - Load the contents of conversations.json into self.conversations_index dictionary
-        """
-
-        
-
         index_file = os.path.join(self.storage_dir, "conversations.json")
-        pass # fixme!
+        if not os.path.exists(index_file):
+            self.save_index()
+        with open(index_file, "r") as f:
+            self.conversations_index = json.load(f)
 
     def save_index(self) -> None:
-        """
-        --- TODO 3: Save the conversations index to disk ---
-        This method should save the current state of self.conversations_index 
-        to the conversations.json file in the storage directory.
-        Ensure the JSON is human-readable by using proper formatting.
-        Hint: Use json.dump() with the 'indent' parameter for readable formatting.
-        """
+        
         index_file = os.path.join(self.storage_dir, "conversations.json")
-        pass #fixme!
+        with open(index_file, "w") as f:
+            json.dump(self.conversations_index, f, indent=3)
 
     def get_conversation(self, conversation_id: str) -> List[any]:
         """
@@ -64,7 +49,16 @@ class FlatFileManager:
             - If the file does not exist it should return an empty list `[]` without raising an error.
             Hint: Use a try-except block to handle error case.
         """
-        pass # fixme!
+
+        conversation = self.conversations_index.get(conversation_id)
+        if not conversation:
+            return []
+        try:
+            with open(conversation, "r") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            return []
+
 
     def save_conversation(self, conversation_id: str, relative_filepath: str, messages: List[any]) -> None:
         """
