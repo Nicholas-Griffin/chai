@@ -41,10 +41,7 @@ def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
             print("Goodbye!")
             break
 
-        # --- TODO 3: Start the performance timer ---
-        # Record the start time before performing the database operations.
-        # Use time.perf_counter() for high precision.
-        start_time = None # fixme!
+        start_time = time.perf_counter()
 
         # --- TODO 4: Implement the Read-Append-Write Cycle ---
         # 1. Get the entire conversation history from the file.
@@ -67,11 +64,9 @@ def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
 
         # ----------------------------------------------------
 
-        # --- TODO 5: Stop the timer and calculate duration ---
-        # Record the end time and calculate the difference to see how long the
-        # entire read-append-write cycle took.
-        end_time = None # fixme!
-        duration = None # fixme!
+        end_time = time.perf_counter()
+        duration = end_time - start_time
+        
         # ---------------------------------------------------
 
         print(f"AI: {ai_response}")
