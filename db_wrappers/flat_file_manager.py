@@ -44,12 +44,12 @@ class FlatFileManager:
         conversation = self.conversations_index.get(conversation_id)
         if not conversation:
             return []
+        conversation = os.path.join(self.storage_dir,conversation)
         try:
             with open(conversation, "r") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             return []
-
 
     def save_conversation(self, conversation_id: str, relative_filepath: str, messages: List[any]) -> None:
 

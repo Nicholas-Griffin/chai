@@ -20,20 +20,48 @@ def main():
     #   Hint: This is not a "clean" addition, you may need to restructure how data is stored and indexed
     #         There are many ways to do this. Devise a plan and implement your own solution.
 
-    conversation_id = f"{user_id}_conversation"
+    conversation_id = getConversationId(db_manager)
+
     run_chat(db_manager, conversation_id)
+
+def getConversationId(db_manager: FlatFileManager) -> str:
+    existingConversations = list(db_manager.conversations_index.keys())
+
+    if existingConversations:
+        print("Existing Conversations:\n")
+        for i, convo in enumerate(existingConversations, start=1):
+            print(f"{i} {convo}")
+        print("\nPlease choose which conversation to continue via numbers (1, 7, 69, 420, etc). \nTo create a new conversation type the title of the new conversation.")
+    else:
+        print("No Previous Conversations. \n\nTo create a new conversation type the title of the new conversation.")
+        
+    user_input = input("> ")
+
+    if user_input.isdigit() and 1<= int(user_input) and int(user_input) <= len(existingConversations):
+        conversation_id = existingConversations[int(user_input) - 1]
+        return conversation_id
+    
+    if user_input.isdigit():
+        print("\nIf you are trying to make a new conversation, please refrain from starting with digits.")
+        print("Otherwise, the conversation doesn't exist.")
+        print("Please try again \n\n")
+        return getConversationId(db_manager)
+    
+    conversation_id = f"{user_input}_conversation"
+    return conversation_id
 
 def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
     start_time = time.time()
     messages = db_manager.get_conversation(conversation_id)
     end_time = time.time()
     duration = end_time - start_time
+
     if messages:
         for message in messages:
-            print(message)
+            print(f"{message['role'].capitalize()}: {message['content']}")
         print(f"Load time: {duration:.4f} seconds")
 
-    print(f"Conversation: '{conversation_id}'. Type 'exit' to quit.")
+    print(f"Conversation: {conversation_id}. Type 'exit' to quit.")
 
     while True:
         user_input = input("> ")
@@ -46,6 +74,7 @@ def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
         if not messages:
             messages = db_manager.get_conversation(conversation_id)
 
+    
         messages.append({"role": "user", "content": user_input})
 
         ai_response = "This is a mock response from the AI."

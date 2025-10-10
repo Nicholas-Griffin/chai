@@ -1,0 +1,18 @@
+[
+   {
+      "role": "user",
+      "content": "Idk"
+   },
+   {
+      "role": "assistant",
+      "content": "This is a mock response from the AI."
+   },
+   {
+      "role": "user",
+      "content": "yes"
+   },
+   {
+      "role": "assistant",
+      "content": "This is a mock response from the AI."
+   }
+]
