@@ -19,7 +19,7 @@ class FlatFileManager:
         self._ensure_storage_exists()
 
         self.conversations_index = {} # Key: conversation_id => Value: Filepath
-        self.users_index = {}
+        self.users_index = {} # Key: user_id → Value: list of conversation_ids
 
         self._init_conversation_index()
         self._init_user_index()
