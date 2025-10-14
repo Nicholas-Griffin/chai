@@ -63,7 +63,15 @@ class FlatFileManager:
 
     #             USERS
 
+    def get_user_conversations(self, user_id: str) -> List[str]:
+        return self.users_index.get(user_id, [])
 
+    def add_conversation_to_user(self, user_id: str, conversation_id: str) -> None:
+        if user_id not in self.users_index:
+            self.users_index[user_id] = []
+        if conversation_id not in self.users_index[user_id]:
+            self.users_index[user_id].append(conversation_id)
+            self.save_user_index
 
     #             CONVO
 
