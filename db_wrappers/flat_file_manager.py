@@ -17,15 +17,21 @@ class FlatFileManager:
         """
         self.storage_dir = storage_dir
         self._ensure_storage_exists()
+
         self.conversations_index = {} # Key: conversation_id => Value: Filepath
-        self._init_index()
+        self.users_index = {}
+
+        self._init_conversation_index()
+        self._init_user_index()
+
+    #             INITS
 
     def _ensure_storage_exists(self) -> None:
 
         os.makedirs(self.storage_dir, exist_ok=True)
         print(f"Storage Directory '{self.storage_dir}' is ready.")
 
-    def _init_index(self) -> None:
+    def _init_conversation_index(self) -> None:
 
         index_file = os.path.join(self.storage_dir, "conversations.json")
         if not os.path.exists(index_file):
@@ -33,11 +39,33 @@ class FlatFileManager:
         with open(index_file, "r") as f:
             self.conversations_index = json.load(f)
 
+    def _init_user_index(self) -> None:
+
+        index_file = os.path.join(self.storage_dir, "users.json")
+        if not os.path.exists(index_file):
+            self.save_user_index()
+        with open(index_file, "r") as f:
+            self.users_index = json.load(f)
+
+    #             SAVES
+
     def save_index(self) -> None:
-        
+
         index_file = os.path.join(self.storage_dir, "conversations.json")
         with open(index_file, "w") as f:
             json.dump(self.conversations_index, f, indent=3)
+
+    def save_user_index(self) -> None:
+
+        index_file = os.path.join(self.storage_dir, "users.json")
+        with open(index_file, "w") as f:
+            json.dump(self.users_index, f, indent=3)
+
+    #             USERS
+
+
+
+    #             CONVO
 
     def get_conversation(self, conversation_id: str) -> List[any]:
 
@@ -95,6 +123,8 @@ class FlatFileManager:
             print(f"Failed to delete storage directory: {e}")
 
         print("All tests passed!")
+
+
 
 if __name__ == "__main__":
     print("Testing FlatFileManager")
