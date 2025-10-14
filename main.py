@@ -20,16 +20,16 @@ def main():
     #   Hint: This is not a "clean" addition, you may need to restructure how data is stored and indexed
     #         There are many ways to do this. Devise a plan and implement your own solution.
 
-    conversation_id = getConversationId(db_manager)
+    conversation_id = getConversationId(db_manager, user_id)
 
     run_chat(db_manager, conversation_id)
 
-def getConversationId(db_manager: FlatFileManager) -> str:
-    existingConversations = list(db_manager.conversations_index.keys())
+def getConversationId(db_manager: FlatFileManager, user_id: str) -> str:
+    conversations = db_manager.get_user_conversations(user_id)
 
-    if existingConversations:
-        print("Existing Conversations:\n")
-        for i, convo in enumerate(existingConversations, start=1):
+    if conversations:
+        print("Your Conversations:\n")
+        for i, convo in enumerate(conversations, start=1):
             print(f"{i} {convo}")
         print("\nPlease choose which conversation to continue via numbers (1, 7, 69, 420, etc). \nTo create a new conversation type the title of the new conversation.")
     else:
@@ -37,17 +37,22 @@ def getConversationId(db_manager: FlatFileManager) -> str:
         
     user_input = input("> ")
 
-    if user_input.isdigit() and 1<= int(user_input) and int(user_input) <= len(existingConversations):
-        conversation_id = existingConversations[int(user_input) - 1]
-        return conversation_id
-    
     if user_input.isdigit():
+        choice = int(user_input)
+        if 1 <= choice <= len(conversations):
+            return conversations[choice - 1]
+    else:
         print("\nIf you are trying to make a new conversation, please refrain from starting with digits.")
         print("Otherwise, the conversation doesn't exist.")
         print("Please try again \n\n")
-        return getConversationId(db_manager)
-    
+        return getConversationId(db_manager, user_id)
+
     conversation_id = f"{user_input}_conversation"
+    if conversation_id in conversations:
+        print("Conversation name already used. Try again.")
+        return getConversationId(db_manager, user_id)
+    
+    db_manager.add_conversation_to_user(user_id, conversation_id)
     return conversation_id
 
 def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
