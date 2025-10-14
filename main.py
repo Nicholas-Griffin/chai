@@ -22,7 +22,7 @@ def main():
 
     conversation_id = getConversationId(db_manager, user_id)
 
-    run_chat(db_manager, conversation_id)
+    run_chat(db_manager, user_id, conversation_id)
 
 def getConversationId(db_manager: FlatFileManager, user_id: str) -> str:
     conversations = db_manager.get_user_conversations(user_id)
@@ -41,11 +41,11 @@ def getConversationId(db_manager: FlatFileManager, user_id: str) -> str:
         choice = int(user_input)
         if 1 <= choice <= len(conversations):
             return conversations[choice - 1]
-    else:
-        print("\nIf you are trying to make a new conversation, please refrain from starting with digits.")
-        print("Otherwise, the conversation doesn't exist.")
-        print("Please try again \n\n")
-        return getConversationId(db_manager, user_id)
+        else:
+            print("\nIf you are trying to make a new conversation, please refrain from starting with digits.")
+            print("Otherwise, the conversation doesn't exist.")
+            print("Please try again \n\n")
+            return getConversationId(db_manager, user_id)
 
     conversation_id = f"{user_input}_conversation"
     if conversation_id in conversations:
