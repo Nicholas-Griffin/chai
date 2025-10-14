@@ -71,7 +71,7 @@ class FlatFileManager:
             self.users_index[user_id] = []
         if conversation_id not in self.users_index[user_id]:
             self.users_index[user_id].append(conversation_id)
-            self.save_user_index
+            self.save_user_index()
 
     #             CONVO
 
