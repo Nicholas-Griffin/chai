@@ -49,13 +49,13 @@ def getConversationId(db_manager: FlatFileManager, user_id: str) -> str:
 
     conversation_id = f"{user_input}_conversation"
     if conversation_id in conversations:
-        print("Conversation name already used. Try again.")
+        print("Conversation name already used. Try again.\n\n")
         return getConversationId(db_manager, user_id)
     
     db_manager.add_conversation_to_user(user_id, conversation_id)
     return conversation_id
 
-def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
+def run_chat(db_manager: FlatFileManager, user_id: str, conversation_id: str) -> None:
     start_time = time.time()
     messages = db_manager.get_conversation(conversation_id)
     end_time = time.time()
@@ -87,6 +87,7 @@ def run_chat(db_manager: FlatFileManager, conversation_id: str) -> None:
 
         relative_filepath = f"{conversation_id}.json"
         db_manager.save_conversation(conversation_id, relative_filepath, messages)
+        db_manager.add_conversation_to_user(user_id, conversation_id)
 
         # ----------------------------------------------------
 
