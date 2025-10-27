@@ -1,72 +1,100 @@
 import time
 import os
-from db_wrappers.flat_file_manager import FlatFileManager
+from db_wrappers.mongodb_manager import MongoDBManager
+
 
 def main():
     """
-    Main function to run the Chai AI chat application.
-    Handles the REPL (Read-Eval-Print Loop) for user interaction.
+    Main function to run the Chai AI chat application with MongoDB.
     """
-    print("Welcome to Chai!")
+    print("Welcome to Chai (MongoDB Edition)!")
+
+    # --- TODO 1: Configure MongoDB Connection ---
+    # Update this connection string for your MongoDB setup
+    # For local: "mongodb://localhost:27017/"
+    # For Atlas: "mongodb+srv://username:password@cluster.mongodb.net/"
+
+    # example for Mongo Atlas
+    # **IMPORTANT** You must set the environment variable MONGO_KEY from your terminal if you are using Atlas
+    # This is something that does not persist from one terminal session to another, so remember to do it!
+    # For Windows Command Prompt: set MONGO_KEY=password_here
+    # For Windows PowerShell: $env:MONGO_KEY = "password_here"
+    # For Mac/Linux: export MONGO_KEY="password_here"
+    #user = "tom" # replace with your username in Atlas
+    #password = os.getenv("MONGO_KEY")
+    #Edit the url to use the url it gives you - remember to enter username and password as is done below
+    #connection_string = f"mongodb+srv://{user}:{password}@cluster0.3walskx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+    # example for Local mongodb
+    # connection_string = "mongodb://localhost:27017/"
+
+    db_manager = MongoDBManager(connection_string="mongodb://localhost:27017/", database_name="chai_db")
+
     user_id = input("Please enter your user ID to begin: ")
 
-    db_manager = FlatFileManager("data")
+    # --- TODO 2: List existing threads and let user choose ---
+    # Steps:
+    # 1. Get list of existing threads for this user using list_user_threads()
+    # 2. If threads exist (Step 2 already done for you, understand the flow, then skip to 3):
+    #    - Print them out with numbers (e.g., "1. work_project")
+    #    - Print an option to create a new thread (e.g., "N. Create new thread")
+    #    - Get user's choice
+    # 3. If no threads exist or user chooses new:
+    #    - Prompt for a new thread name (already done for you, skip to next)
+    #    - Store the new thread_name
 
-    # --- TODO 6 (do this last): Create a way for a user_id to have multiple conversation threads
-    # Requirements:
-    #   - If user already exists, then have the user select which thread (conversation_id) they want to use
-    #       - Give the option to use a new thread
-    #   - Proceed to run_chat() with the correct conversation_id
-    #   Hint: This is not a "clean" addition, you may need to restructure how data is stored and indexed
-    #         There are many ways to do this. Devise a plan and implement your own solution.
+    threads = db_manager.list_user_threads(user_id)
 
-    conversation_id = getConversationId(db_manager, user_id)
+    for i, thread_name in enumerate(threads):
+        print(f"{i}. {thread_name}")
+    print(f"{len(threads)}. Create new thread")
+    user_selection = input("Enter a thread number:")
 
-    run_chat(db_manager, user_id, conversation_id)
+    if not user_selection.isdigit():
+        print("Not a number, exiting")
+        return
 
-def getConversationId(db_manager: FlatFileManager, user_id: str) -> str:
-    conversations = db_manager.get_user_conversations(user_id)
+    choice = int(user_selection)
 
-    if conversations:
-        print("Your Conversations:\n")
-        for i, convo in enumerate(conversations, start=1):
-            print(f"{i} {convo}")
-        print("\nPlease choose which conversation to continue via numbers (1, 7, 69, 420, etc). \nTo create a new conversation type the title of the new conversation.")
+    if choice > len(threads):
+        print("Selection is too large of a number")
+        return
+
+    thread_name = ""
+    if not threads or choice == len(threads):
+        # prompt for thread name
+        thread_name = input("Enter thread name:")
+        # Store new thread name
+        db_manager.save_conversation(user_id, thread_name, [])
+        # db_manager.save_conversation
     else:
-        print("No Previous Conversations. \n\nTo create a new conversation type the title of the new conversation.")
-        
-    user_input = input("> ")
+        thread_name = threads[choice]
 
-    if user_input.isdigit():
-        choice = int(user_input)
-        if 1 <= choice <= len(conversations):
-            return conversations[choice - 1]
-        else:
-            print("\nIf you are trying to make a new conversation, please refrain from starting with digits.")
-            print("Otherwise, the conversation doesn't exist.")
-            print("Please try again \n\n")
-            return getConversationId(db_manager, user_id)
+    run_chat(db_manager, user_id, thread_name)
 
-    conversation_id = f"{user_input}_conversation"
-    if conversation_id in conversations:
-        print("Conversation name already used. Try again.\n\n")
-        return getConversationId(db_manager, user_id)
-    
-    db_manager.add_conversation_to_user(user_id, conversation_id)
-    return conversation_id
+    # Don't forget to close the connection when done!
+    db_manager.close()
 
-def run_chat(db_manager: FlatFileManager, user_id: str, conversation_id: str) -> None:
-    start_time = time.time()
-    messages = db_manager.get_conversation(conversation_id)
-    end_time = time.time()
+
+def run_chat(db_manager: MongoDBManager, user_id: str, thread_name: str) -> None:
+    """
+    Runs the chat loop for a specific conversation thread.
+    """
+    # --- TODO 3: Load and display existing conversation ---
+    # Time how long it takes to load the conversation
+    start_time = time.perf_counter()
+    messages = db_manager.get_conversation(user_id, thread_name)
+    end_time = time.perf_counter()
     duration = end_time - start_time
 
     if messages:
+        print(f"\n--- Conversation History ({len(messages)} messages) ---")
         for message in messages:
-            print(f"{message['role'].capitalize()}: {message['content']}")
-        print(f"Load time: {duration:.4f} seconds")
+            role = message['role'].capitalize()
+            print(f"{role}: {message['content']}")
+        print(f"Load time: {duration:.4f} seconds\n")
 
-    print(f"Conversation: {conversation_id}. Type 'exit' to quit.")
+    print(f"Conversation: '{thread_name}'. Type 'exit' to quit.")
 
     while True:
         user_input = input("> ")
@@ -74,27 +102,30 @@ def run_chat(db_manager: FlatFileManager, user_id: str, conversation_id: str) ->
             print("Goodbye!")
             break
 
+        # --- TODO 4: Append messages using the efficient append_message() method ---
+        # Steps:
+        # 1. Start performance timer
+        # 2. Append user message using append_message()
+        # 3. Create mock AI response
+        # 4. Append AI response using append_message()
+        # 5. Stop timer and calculate duration
+        #
+        # Note: We're calling append_message() TWICE (once for user, once for AI)
+        # This is different from Lab 1 where we did one big write!
+
         start_time = time.perf_counter()
 
-        if not messages:
-            messages = db_manager.get_conversation(conversation_id)
+        # Append user message
+        user_message = {"role": "user", "content": user_input}
+        db_manager.append_message(user_id, thread_name, user_message)
 
-    
-        messages.append({"role": "user", "content": user_input})
-
+        # Create and append AI response
         ai_response = "This is a mock response from the AI."
-        messages.append({"role": "assistant", "content": ai_response})
-
-        relative_filepath = f"{conversation_id}.json"
-        db_manager.save_conversation(conversation_id, relative_filepath, messages)
-        db_manager.add_conversation_to_user(user_id, conversation_id)
-
-        # ----------------------------------------------------
+        ai_message = {"role": "assistant", "content": ai_response}
+        db_manager.append_message(user_id, thread_name, ai_message)
 
         end_time = time.perf_counter()
-        duration = end_time - start_time
-
-        # ---------------------------------------------------
+        duration = end_time-start_time
 
         print(f"AI: {ai_response}")
         print(f"(Operation took {duration:.4f} seconds)")
