@@ -161,7 +161,7 @@ class MongoDBManager:
 
         Hint: list(self.conversations.find({"user_id": user_id}, {"thread_name": True, "_id": False}))
         """
-        matches = list(self.conversations.find({}, {})) # fixme!
+        matches = list(self.conversations.find({"user_id": user_id}, {"thread_name": True, "_id": False}))
         thread_names = []
         for record in matches:
             thread_names.append(record["thread_name"])
