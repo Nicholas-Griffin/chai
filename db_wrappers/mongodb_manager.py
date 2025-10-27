@@ -27,8 +27,8 @@ class MongoDBManager:
         # Hint: self.client[database_name] gets a database
         # Hint: db[collection_name] gets a collection - use "conversations" as the collection_name
         self.client = MongoClient(connection_string)
-        self.db = None #fixme!
-        self.conversations = None #fixme!
+        self.db = self.client[database_name]
+        self.conversations = self.db["conversations"]
 
         self._ensure_indexes()
 
@@ -61,7 +61,7 @@ class MongoDBManager:
 
         Hint: find_one({"user_id": user_id, "thread_name": thread_name})
         """
-        # document = self.conversations. fixme!
+        document = self.conversations.find_one({"user_id": user_id, "thread_name": thread_name})
         if not document or "messages" not in document:
             return []
         return document["messages"]
