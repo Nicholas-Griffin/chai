@@ -92,11 +92,18 @@ class MongoDBManager:
 
         Hint: self.conversations.update_one({filter goes here}, {update goes here}, upsert=True)
         """
-        conversation_id = f"{}_{}" # fixme!
-        # fixme! add fields to document
+        conversation_id = f"{user_id}_{thread_name}"
+
         document = {
+            "_id": conversation_id,
+            "user_id": user_id,
+            "thread_name": thread_name,
+            "messages": messages,
+            "created_at": datetime.now(UTC).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat()
         }
-        # fixme! self.conversations.
+
+        self.conversations.update_one({"_id": conversation_id},{"$set": document}, upsert=True)
 
     def append_message(self, user_id: str, thread_name: str, message: Dict) -> None:
         """
@@ -120,12 +127,15 @@ class MongoDBManager:
         Hint: $push adds to an array, $setOnInsert sets values only on insert
         Hint: update_one(filter, {"$push": {...}, "$set": {...}, "$setOnInsert": {...}}, upsert=True)
         """
-        conversation_id = "" #fixme!
-        # fixme! fill out update
+        conversation_id = f"{user_id}_{thread_name}"
+
         update = {
-            "$push": {},
-            "$set": {},
+            "$push": {"messages": message},
+            "$set": {"updated_at": datetime.now(UTC).isoformat()},
             "$setOnInsert": {
+                "user_id": user_id,
+                "thread_name": thread_name,
+                "created_at": datetime.now(UTC).isoformat()
             }
         }
 
